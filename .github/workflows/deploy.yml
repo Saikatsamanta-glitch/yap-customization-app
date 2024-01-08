@@ -1,0 +1,94 @@
+name: Deploy Release
+
+run-name: Deploy release ${{ inputs.release }} to ${{ inputs.deploy-environment }} environment
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Release to Deploy'
+        required: true
+        type: text
+      deploy-environment:
+        description: 'Deploy to'
+        required: true
+        default: 'stg'
+        type: choice
+        options:
+          - 'stg'
+          - 'prd'
+      project:
+          description: 'Project'
+          required: true
+          default: 'ed'
+          type: choice
+          options:
+              - 'ed'
+              - 'yap'
+
+jobs:
+
+  check-release:
+    name: Release Prefix
+    runs-on: ubuntu-latest
+    #     This is to know if the reference of the trigger i.e the tag is a release or prerelease. Later to avoid any release which are not created or in Draft state.
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check the release details
+      id: release_prefix
+      run: |
+        gh release view ${{ inputs.release }} --json isPrerelease,isDraft --jq 'if .isPrerelease==false and .isDraft==false then "release" elif .isPrerelease==true and .isDraft==false then "prerelease" else "draft" end' >> release-prefix.json
+        echo "prefix=`cat release-prefix.json`" >> $GITHUB_OUTPUT
+    outputs:
+      prefix: ${{ steps.release_prefix.outputs.prefix }}
+
+  check-build:
+    name: Check if Build exists
+    needs: check-release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setting up Environment specific AWS Region 
+      run: |
+        if [ ${{ inputs.deploy-environment }} == prd ]; then
+          echo "AWS_REGION is us-east-1"
+          echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
+        else
+          echo "AWS_REGION is us-east-1"
+          echo "AWS_REGION=us-east-1" >> $GITHUB_ENV
+        fi
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Find Image
+      id: check_build
+      run: |
+        source ./.aws/config.sh
+        REPOSITORY=$SERVICE_NAME
+        ENVIRONMENT=${{ inputs.deploy-environment }}
+        IMAGE_TAG=${{ inputs.release }}
+        IMAGE_META="$( aws ecr batch-get-image --repository-name=$REPOSITORY --image-ids=imageTag=$IMAGE_TAG --query 'images[].imageId.imageTag' --output text )"
+        if [ $IMAGE_META == $IMAGE_TAG ]; then
+          echo "$IMAGE_META found"
+          echo "build=true" >> $GITHUB_OUTPUT
+        else
+          echo "$IMAGE_META Not Found"
+          echo "build=false" >> $GITHUB_OUTPUT
+        fi
+    outputs:
+      build_present: ${{ steps.check_build.outputs.build }}
+
+  deploy-service:
+    needs: [ check-release, check-build ]
+    if: needs.check-build.outputs.build_present && (( needs.check-release.outputs.prefix == 'release' && inputs.deploy-environment == 'prd') || ( needs.check-release.outputs.prefix == 'prerelease' && inputs.deploy-environment != 'prd'))
+    uses: yapsody/actions/.github/workflows/deploy-service.yml@master
+    secrets: inherit
+    with:
+      deploy-environment: ${{ inputs.deploy-environment }}
+      release: ${{ inputs.release }}
+      project: ${{ inputs.project }}

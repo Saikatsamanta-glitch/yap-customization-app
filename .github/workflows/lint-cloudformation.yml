@@ -1,0 +1,19 @@
+name: Lint Cloudformation
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.aws/cloudformation.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.aws/cloudformation.yml'
+
+jobs:
+  test:
+    name: Lint Cloudformation
+    uses: yapsody/actions/.github/workflows/lint-cloudformation.yml@master
+    secrets: inherit

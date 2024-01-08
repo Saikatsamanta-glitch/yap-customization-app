@@ -1,0 +1,13 @@
+name: 'On issues opened'
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+
+  scrum-process:
+    name: Add issue to SCRUM Process
+    uses: yapsody/actions/.github/workflows/add-issue-opened.yml@master
+    secrets: inherit

@@ -1,0 +1,7 @@
+{
+    "name": "Automatic Sitemap generator",
+    "summary": "Service to generate sitemap automatically.",
+    "details": "The generator identifies all the URLs that need to be included in the sitemap. It creates a structured document following the XML format based on date present in event discovery database. Cron job must be run in-order to generate and crawl through websites. This generator consumes scheduled SQSs to produce new sitemaps to S3 bucket.",
+    "subscribes": [],
+    "publishes": []
+}

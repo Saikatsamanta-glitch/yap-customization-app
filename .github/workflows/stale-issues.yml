@@ -1,0 +1,12 @@
+name: 'Close stale issues'
+
+on:
+  schedule:
+    - cron: '30 1 * * *'
+
+jobs:
+
+  stale:
+    name: Close stale issues
+    uses: yapsody/actions/.github/workflows/stale-issues.yml@master
+    secrets: inherit

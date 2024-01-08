@@ -1,0 +1,19 @@
+name: Create Release from new tag pushed
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  create-release:
+    name: Create release from pushed tag
+    uses: yapsody/actions/.github/workflows/github-release.yml@master
+    secrets: inherit
+    with:
+      tag: ${{ github.ref_name }}
+      title: "Release ${{ github.ref_name }}"
+      auto-release-notes: true
+      notes: ""
+      prerelease: true
+      publish: false 

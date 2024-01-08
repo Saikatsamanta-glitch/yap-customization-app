@@ -1,0 +1,13 @@
+name: 'On issues labeled'
+
+on:
+  issues:
+    types:
+      - labeled
+
+jobs:
+
+  bug-triage:
+    name: Add issue to Bug Triage
+    uses: yapsody/actions/.github/workflows/on-issues-labeled.yml@master
+    secrets: inherit
