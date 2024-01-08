@@ -2,7 +2,7 @@
 
 ## Stage 1 (production base)
 # This gets our prod dependencies installed and out of the way
-FROM node:18-alpine3.16 as base
+FROM node:20-alpine3.16 as base
 EXPOSE 8080
 ARG NPM_TOKEN
 ENV NODE_ENV=production \
