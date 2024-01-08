@@ -30,7 +30,7 @@ jobs:
       INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v3.5.1
         with:
