@@ -1,4 +1,5 @@
 const ExcelJS = require("exceljs");
+const { decode } = require("html-entities");
 const workbook = new ExcelJS.Workbook();
 
 const service = require("../services");
@@ -27,7 +28,8 @@ const createExcelFile = async (data, batchIndex, worksheet) => {
   const fileName = `events_batch.xlsx`;
   await workbook.xlsx.writeFile(fileName);
 };
-const details = async (worksheet) => {
+
+const Sitemapdetail = async (worksheet) => {
   worksheet.columns = [
     { header: "total Events", key: "total Events", width: 30 },
     { header: "total Yapsody Events", key: "total Yapsody Events", width: 30 },
@@ -36,15 +38,16 @@ const details = async (worksheet) => {
 };
 const generateExcelData = async (req, res, next) => {
   const details = await service.generateDataExcel();
+//   console.log(details);
   // https://yapsody.events/events/1363-swot-day-perioperative-care-event-tickets-swot-education-yapsody
   const dataArray = details.map((data) => {
     // Extracting required fields
 
     const { start_date, end_date, sitemaps, location, name, id } = data;
-    const urlname = convertStringToUrlFormat({ data: data.name });
-    let url = "https://yapsody.events";
-
-    const { name } = sitemaps[0];
+    const urlname = convertStringToUrlFormat({ data: name });
+    const url = "https://yapsody.events";
+    const event_url = `${url}/events/${id}-${urlname}`;
+    const names = sitemaps[0].name;
     const { address } = location;
 
     // Creating a new object with required fields
@@ -52,7 +55,7 @@ const generateExcelData = async (req, res, next) => {
       start_date,
       end_date,
       event_url,
-      name,
+      names,
       address,
     };
   });
@@ -79,7 +82,7 @@ const generateExcelData = async (req, res, next) => {
   // Execute the batch processing
   processDataInBatches();
 
-  res.json({ message: details });
+  res.json({ message: "Successfully job ran" });
 };
 
 module.exports = { generateExcelData };
