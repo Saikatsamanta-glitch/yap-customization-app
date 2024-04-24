@@ -29,13 +29,7 @@ const createExcelFile = async (data, batchIndex, worksheet) => {
   await workbook.xlsx.writeFile(fileName);
 };
 
-const Sitemapdetail = async (worksheet) => {
-  worksheet.columns = [
-    { header: "total Events", key: "total Events", width: 30 },
-    { header: "total Yapsody Events", key: "total Yapsody Events", width: 30 },
-    { header: "total Insider Events", key: "total Insider Events", width: 30 },
-  ];
-};
+
 const generateExcelData = async (req, res, next) => {
   const details = await service.generateDataExcel();
 //   console.log(details);
@@ -48,15 +42,19 @@ const generateExcelData = async (req, res, next) => {
     const url = "https://yapsody.events";
     const event_url = `${url}/events/${id}-${urlname}`;
     const names = sitemaps[0].name;
-    const { address } = location;
+    const { country, country_id, city, city_id } = location;
 
     // Creating a new object with required fields
     return {
+      name,
       start_date,
       end_date,
-      event_url,
       names,
-      address,
+      city,
+      city_id,
+      country,
+      country_id,
+      event_url,
     };
   });
   const batchSize = 1000; // Set the batch size as needed

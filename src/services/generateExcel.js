@@ -11,7 +11,7 @@ const generateDataExcel = async () => {
     },
     {
       model: LocationModel,
-      attributes: ["address"],
+      attributes: ['country', 'country_id', 'city', 'city_id'],
       required: true,
     },
   ];
